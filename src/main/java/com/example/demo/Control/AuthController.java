@@ -8,32 +8,39 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private JwtUtil jwtUtil;
 
     @Autowired
-    private JwtUtil jwtTokenUtil;
+    private AuthenticationManager authManager;
 
-    @PostMapping("/api/login")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(), request.getPassword())
-        );
+        try {
+            Authentication auth = authManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getLogin(), // Can be email OR username
+                            request.getPassword()
+                    )
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            String token = jwtUtil.generateToken(auth.getName());
+            return ResponseEntity.ok(new JwtResponse(token));
 
-        String username = authentication.getName();
-        String token = jwtTokenUtil.generateToken(username);
-        return ResponseEntity.ok(new JwtResponse(token));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(401).body("Invalid credentials");
+        }
     }
 }

@@ -10,10 +10,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @EnableTransactionManagement
 @SpringBootApplication
-public class DemoApplication {
+
+public class BlogApp {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DemoApplication.class, args);
+		SpringApplication.run(BlogApp.class, args);
 	}
 	@Bean
 	public PlatformTransactionManager manager(MongoDatabaseFactory dbFactory) {

@@ -9,6 +9,7 @@ import com.example.demo.Operations.Entity.Comments;
 import com.example.demo.Operations.Entity.Likes;
 import com.example.demo.Operations.Service.LikesServices;
 import com.example.demo.Repository.BlogRepository;
+import com.example.demo.Repository.UserRepository;
 import com.example.demo.Service.UserServices;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -216,4 +217,66 @@ public class UserControl {
         return commentsControl.addReply(id,comments);
     }
 
+
+    @PostMapping("follow-user/user-id={UId}")
+    @Transactional
+    public ResponseEntity<?> followUser(@PathVariable ObjectId UId){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        User user1 = userServices.findUser(username);
+        User user2 = userServices.findByID(UId);
+
+        if(user2==null)
+            return new ResponseEntity<>("User not found",HttpStatus.NOT_FOUND);
+        if(user1.getFollowing().contains(user2.getUsername()))
+            return new ResponseEntity<>("Already following "+user2.getUsername(),HttpStatus.CONFLICT);
+
+        user1.getFollowing().add(user2.getUsername());
+        user2.getFollowers().add(user1.getUsername());
+
+        userServices.saveUser(user1);
+        userServices.saveUser(user2);
+        return new ResponseEntity<>(HttpStatus.OK);
+
+    }
+
+    @DeleteMapping("unfollow-user/user-id={UId}")
+    @Transactional
+    public ResponseEntity<?> unfollowUser(@PathVariable ObjectId UId){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        User user1 = userServices.findUser(username);
+        User user2 = userServices.findByID(UId);
+
+        if(user2==null || !user1.getFollowing().contains(user2.getUsername()))
+            return new ResponseEntity<>("User not found",HttpStatus.NOT_FOUND);
+
+        user1.getFollowing().remove(user2.getUsername());
+        user2.getFollowers().remove(user1.getUsername());
+        userServices.saveUser(user1);
+        userServices.saveUser(user2);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("remove-follower/user-id={UId}")
+    @Transactional
+
+    public ResponseEntity<?> removeFollowing(@PathVariable ObjectId UId){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        User user1 = userServices.findUser(username);
+        User user2 = userServices.findByID(UId);
+
+        if(user2==null || !user1.getFollowers().contains(user2.getUsername()))
+            return new ResponseEntity<>("User not found",HttpStatus.NOT_FOUND);
+
+        user1.getFollowers().remove(user2.getUsername());
+        user2.getFollowing().remove(user1.getUsername());
+        userServices.saveUser(user1);
+        userServices.saveUser(user2);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

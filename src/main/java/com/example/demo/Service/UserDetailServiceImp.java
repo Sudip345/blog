@@ -3,27 +3,37 @@ package com.example.demo.Service;
 import com.example.demo.Entity.User;
 import com.example.demo.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+@Service
 public class UserDetailServiceImp implements UserDetailsService {
-    @Autowired
-    UserRepository userEntryRepository;
+
+    private final UserRepository userRepository;
+
+    // Constructor injection
+    public UserDetailServiceImp(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     @Override
-
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userEntryRepository
-                .findByUsername(username)
+    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
+        User user = userRepository.findByUsernameOrEmail(identifier, identifier)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        System.out.println(user.getUsername() +" "+user.getPassword());
 
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
-                .password(user.getPassword())
-                .roles(user.getRoles().toArray(new String[0]))
-                .build();
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                user.getRoles().stream()
+                        .map(authority -> new SimpleGrantedAuthority(authority))
+                        .collect(Collectors.toList())
+        );
     }
 }

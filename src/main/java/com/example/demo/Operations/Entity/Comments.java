@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -17,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @Document(collection = "comment")
 public class Comments {
-    @org.springframework.data.annotation.Id
+    @Id
     private ObjectId commentId;
     private String comment;
     @DBRef

@@ -22,6 +22,10 @@ public class UserServices {
         return userRepository.findByUsername(name).orElse(null);
     }
 
+    public User findByID(ObjectId id){
+        return userRepository.findById(id).orElse(null);
+    }
+
     public boolean removeUser(String name){
         User user= userRepository.findByUsername(name).orElse(null);
         if(user==null)

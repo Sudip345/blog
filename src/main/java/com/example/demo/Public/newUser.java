@@ -39,21 +39,13 @@ public class newUser {
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 
-    @Transactional
-    @GetMapping("/check-user")
-    public ResponseEntity<?> checkUser(@RequestBody User user){
-        Query query = new Query();
-        query.addCriteria(Criteria.where("email").is(user.getEmail()));
-        User check = mongoTemplate.findOne(query,User.class);
-        if(check==null)
-            return new ResponseEntity<>(HttpStatus.OK);
-        return new ResponseEntity<>("User exists with this email",HttpStatus.CONFLICT);
-    }
+
+
 
     @Transactional
     @PostMapping("/new-user")
-    public ResponseEntity<?> newUser(@RequestBody User user) {
-        if (userRepository.findByUsername(user.getUsername()).orElse(null) == null) {
+    public ResponseEntity<?> createUser(@RequestBody User user) {
+        if (userRepository.findByUsernameOrEmail(user.getUsername(), user.getEmail()).orElse(null)==null) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.getRoles().add("USER");
             userRepository.insert(user);
