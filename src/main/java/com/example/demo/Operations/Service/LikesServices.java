@@ -24,4 +24,7 @@ public class LikesServices {
     public void removeLikes(ObjectId id){
         likesRepository.deleteById(id);
     }
+    public void savelike(Likes likes){
+        likesRepository.save(likes);
+    }
 }

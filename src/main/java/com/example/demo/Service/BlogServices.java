@@ -1,5 +1,7 @@
 package com.example.demo.Service;
 
+import com.example.demo.Control.BlogControl;
+import com.example.demo.Control.FilesControl;
 import com.example.demo.Entity.Blog;
 import com.example.demo.Entity.User;
 import com.example.demo.Operations.Service.CommentServices;
@@ -30,6 +32,9 @@ public class BlogServices {
     @Autowired
     UserServices userServices;
 
+    @Autowired
+    FilesControl filesControl;
+
     public Blog findBlog(ObjectId id){
         return blogRepository.findById(id).orElse(null);
     }
@@ -52,6 +57,10 @@ public class BlogServices {
 
         List<Likes> likesList = temp.getLikes();
         List<Comments> commentsList = temp.getComments();
+        List<ObjectId> filesID = temp.getFileID();
+        for(ObjectId FId: filesID){
+            filesControl.deleteFile(FId);
+        }
         for(Likes likes:likesList){
             likesServices.removeLikes(likes.getId());
         }

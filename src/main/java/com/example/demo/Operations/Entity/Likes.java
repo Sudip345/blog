@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -15,8 +16,9 @@ import java.time.LocalDateTime;
 @Data
 @Document(collection = "like")
 public class Likes {
-    @org.springframework.data.annotation.Id
+    @Id
     private ObjectId id ;
+    private String stringID;
     @NonNull
     private String user;
     @NonNull

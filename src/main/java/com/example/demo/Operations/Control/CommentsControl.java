@@ -1,6 +1,7 @@
 package com.example.demo.Operations.Control;
 
 import com.example.demo.Entity.Blog;
+import com.example.demo.Entity.User;
 import com.example.demo.Operations.Entity.Comments;
 import com.example.demo.Operations.Service.CommentServices;
 import com.example.demo.Service.BlogServices;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 @Component
@@ -28,29 +30,33 @@ public class CommentsControl {
         return commentServices.findComment(id);
     }
 
-    public ResponseEntity<?> addComment(Comments comments,Blog blog){
+    public Comments addComment(Comments comments,Blog blog){
         comments.setBlogID(blog.getId());
         comments.setTime(LocalDateTime.now());
         comments.setLikes(0);
         commentServices.addComment(comments);
         blog.getComments().add(comments);
         blogServices.saveBlog(blog);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return comments;
     }
 
-    public ResponseEntity<?> addReply(ObjectId comntId , Comments comments){
+    public Comments saveComment(Comments comments){
+         return commentServices.saveComment(comments);
+    }
+
+    public Comments addReply(ObjectId comntId , Comments comments){
         Comments comments1 = commentServices.findComment(comntId);
         if(comments1==null)
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return null   ;
         ObjectId blogId = comments1.getBlogID();
         Blog blog = blogServices.findBlog(blogId);
         comments.setTime(LocalDateTime.now());
         comments.setBlogID(comments1.getBlogID());
         if(addReplyHelper(blog.getComments(),comntId,comments)){
             blogServices.saveBlog(blog);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return comments;
         }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return null;
     }
 
     private Boolean addReplyHelper(List<Comments> commentsList, ObjectId id, Comments target) {
@@ -73,17 +79,19 @@ public class CommentsControl {
 
 
 
-    public ResponseEntity<?> deleteComment(ObjectId comntId){
+    public boolean deleteComment(ObjectId comntId){
         Comments comments1 = commentServices.findComment(comntId);
         if(comments1==null)
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return false;
         ObjectId blogId =  comments1.getBlogID();
         Blog blog = blogServices.findBlog(blogId);
         if(deleteCommentHelper(blog.getComments(),comntId)){
             blogServices.saveBlog(blog);
-            return new ResponseEntity<>(HttpStatus.OK);
+            HashMap<ObjectId,Blog>map = new HashMap<>();
+            map.put(blog.getId(),blog);
+            return true;
         }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return false;
 
     }
 
@@ -121,17 +129,17 @@ public class CommentsControl {
     }
 
 
-    public ResponseEntity<?> likeComment(ObjectId id){
+    public Comments likeComment(ObjectId id){
         Comments comments = commentServices.findComment(id);
         if(comments==null)
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return null;
         ObjectId blogID = comments.getBlogID();
         Blog blog = blogServices.findBlog(blogID);
         if(likeCommentHelper(blog.getComments(),id)){
             blogServices.saveBlog(blog);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return comments;
         }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return null;
     }
 
     private boolean likeCommentHelper(List<Comments>commentsList,ObjectId id){
@@ -153,17 +161,18 @@ public class CommentsControl {
 
 
 
-    public ResponseEntity<?> deleteLikeComment(ObjectId id){
+    public boolean deleteLikeComment(ObjectId id){
         Comments comments = commentServices.findComment(id);
         if(comments==null)
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return false;
         ObjectId blogID = comments.getBlogID();
         Blog blog = blogServices.findBlog(blogID);
         if(deleteLikeCommentHelper(blog.getComments(),id)){
             blogServices.saveBlog(blog);
-            return new ResponseEntity<>(HttpStatus.OK);
+
+            return true;
         }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return false;
     }
 
     private boolean deleteLikeCommentHelper(List<Comments>commentsList,ObjectId id){
@@ -186,17 +195,19 @@ public class CommentsControl {
 
 
     @Transactional
-    public ResponseEntity<?> updateComment(ObjectId id , Comments comments){
+    public Comments updateComment(ObjectId id , Comments comments){
         Comments comments1 = commentServices.findComment(id);
         if(comments1==null)
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return null;
         ObjectId blogID = comments1.getBlogID();
         Blog blog = blogServices.findBlog(blogID);
         if(updateCommentHelper(blog.getComments(),id,comments)){
             blogServices.saveBlog(blog);
-            return new ResponseEntity<>(HttpStatus.OK);
+            HashMap<ObjectId,Blog>map = new HashMap<>();
+            map.put(blog.getId(),blog);
+            return comments1;
         }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return null;
     }
 
     private boolean updateCommentHelper(List<Comments> commentsList,ObjectId id, Comments comments){

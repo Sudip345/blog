@@ -23,13 +23,14 @@ import java.util.List;
 public class Blog {
     @Id
     private ObjectId id;
+    private String caption;
     private String author;
-    private String title;
-    @NonNull
-    private String content;
     private LocalDateTime localDateTime;
+    private String stringID;
     @DBRef
     private List<Likes> likes = new ArrayList<>();
     @DBRef
     private List<Comments> comments = new ArrayList<>();
+
+    private List<ObjectId> fileID = new ArrayList<>();
 }

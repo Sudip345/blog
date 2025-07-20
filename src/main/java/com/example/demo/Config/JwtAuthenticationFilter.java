@@ -8,6 +8,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NoArgsConstructor;
+import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,23 +30,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                   @NonNull HttpServletResponse response,
-                                   @NonNull FilterChain filterChain)
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
+        String token = null;
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // 1. Try to get token from Cookie
+        if (request.getCookies() != null) {
+            for (var cookie : request.getCookies()) {
+                if ("token".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        final String token = authHeader.substring(7); // Remove "Bearer "
-
         try {
-
+            SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
             Claims claims = Jwts.parser()
-                    .setSigningKey(secret.getBytes(StandardCharsets.UTF_8))
+                    .setSigningKey(key)
                     .parseClaimsJws(token)
                     .getBody();
 
@@ -70,7 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token validation failed");
             return;
         }
-
         filterChain.doFilter(request, response);
     }
+
 }

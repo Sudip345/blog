@@ -24,23 +24,28 @@ public class LikesControl {
     @Autowired
     LikesServices likesServices;
 
-    public ResponseEntity<?> LikeBlog(Blog blog,Likes likes){
+    public Likes LikeBlog(Blog blog,Likes likes){
         likes.setBlogID(blog.getId());
         likes.setLocalDateTime(LocalDateTime.now());
         likesServices.addLikes(likes);
         blog.getLikes().add(likes);
         blogServices.saveBlog(blog);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return likes;
     }
 
-    public ResponseEntity<?> deleteLike( ObjectId id){
+    public boolean deleteLike( ObjectId id){
         Likes likes = likesServices.findLike(id);
-        ObjectId blogID = likes.getBlogID();
+        ObjectId  blogID = likes.getBlogID();
         Blog blog = blogServices.findBlog(blogID);
         blog.getLikes().removeIf(x->x.getId().equals(id));
         likesServices.removeLikes(id);
         blogServices.saveBlog(blog);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return true;
+    }
+
+    public Likes saveLike(Likes likes){
+        likesServices.savelike(likes);
+        return likes;
     }
 
     public List<Likes> findAllLikes(Blog blog){

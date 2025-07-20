@@ -20,6 +20,7 @@ import java.util.List;
 public class Comments {
     @Id
     private ObjectId commentId;
+    private String stringID;
     private String comment;
     @DBRef
     private List<Comments> replies = new ArrayList<>();

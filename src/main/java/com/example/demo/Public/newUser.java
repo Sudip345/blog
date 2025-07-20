@@ -49,6 +49,8 @@ public class newUser {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.getRoles().add("USER");
             userRepository.insert(user);
+            user.setStringID(user.getUserId()+"");
+            userRepository.save(user);
 
             String token = jwtUtil.generateToken(user.getUsername());
 

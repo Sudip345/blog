@@ -21,6 +21,7 @@ import java.util.List;
 public class User {
     @Id
     private ObjectId userId;
+    private String stringID;
     @NonNull
     @Indexed(unique = true)
     private String username;

@@ -2,11 +2,10 @@ package com.example.demo.Control;
 
 import com.example.demo.Entity.Blog;
 import com.example.demo.Service.BlogServices;
+import com.example.demo.Service.FilesServices;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BlogControl {
     @Autowired
     BlogServices blogServices;
+    FilesServices filesServices;
 
     public boolean addBlog(Blog blog){
         return blogServices.insertBlog(blog);
@@ -24,10 +24,13 @@ public class BlogControl {
     }
 
     public boolean deleteBlog(ObjectId id){
+        Blog blog = blogServices.findBlog(id);
+        if(blog==null)
+            return false ;
         return blogServices.removeBlog(id);
     }
 
-    public boolean editBlog(Blog blog){ return blogServices.saveBlog(blog);
+    public boolean saveBlog(Blog blog){ return blogServices.saveBlog(blog);
     }
 
 }
